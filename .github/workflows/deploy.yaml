@@ -21,21 +21,11 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/go-server:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/go-server:latest
 
-          - name: Set up SSH and Deploy
-          env:
-            SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          run: |
-            # Set up SSH
-            mkdir -p ~/.ssh
-            echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
-            chmod 600 ~/.ssh/id_rsa
-            ssh-keyscan -H k8.brightsideserve.com >> ~/.ssh/known_hosts
+      - name: Set up Kubeconfig and Deploy
+        run: |
+          # Write the kubeconfig content to a file
+          echo "${{ secrets.KUBECONFIG_CONTENT }}" > kubeconfig.yaml
+          export KUBECONFIG=$(pwd)/kubeconfig.yaml
 
-            # Test SSH connection
-            ssh pi@k8.brightsideserve.com "echo Connected successfully"
-
-            # Use SSH tunnel to deploy
-            ssh -L 6443:127.0.0.1:6443 pi@k8.brightsideserve.com <<EOF
-              export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-              kubectl --insecure-skip-tls-verify set image deployment/go-server go-server=${{ secrets.DOCKER_USERNAME }}/go-server:latest
-            EOF
+          # Update the Kubernetes deployment
+          kubectl set image deployment/go-server go-server=${{ secrets.DOCKER_USERNAME }}/go-server:latest
