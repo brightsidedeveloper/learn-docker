@@ -37,5 +37,5 @@ jobs:
             # Use SSH tunnel to deploy
             ssh -L 6443:127.0.0.1:6443 pi@k8.brightsideserve.com <<EOF
               export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-              kubectl set image deployment/go-server go-server=${{ secrets.DOCKER_USERNAME }}/go-server:latest
+              kubectl --insecure-skip-tls-verify set image deployment/go-server go-server=${{ secrets.DOCKER_USERNAME }}/go-server:latest
             EOF
