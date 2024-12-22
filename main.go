@@ -17,7 +17,7 @@ func main() {
 	})
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("OK"))
+		w.Write([]byte("Fire"))
 	})
 
 	port := os.Getenv("PORT")
