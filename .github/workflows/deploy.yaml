@@ -33,4 +33,4 @@ jobs:
 
       - name: Trigger Workflow via HTTP
         run: |
-          curl -X GET "https://workflow.brightsideserve.com/trigger?version=${{ github.sha }}"
+          curl -X GET "https://workflow.brightsideserve.com/trigger?version=${{ env.VERSION }}"
