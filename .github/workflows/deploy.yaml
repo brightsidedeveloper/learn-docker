@@ -39,5 +39,6 @@ jobs:
 
       - name: Deploy to Kubernetes
         run: |
+          export KUBECONFIG=/kubeconfig/kubeconfig
           kubectl set image deployment/go-server go-server=${{ secrets.DOCKER_USERNAME }}/go-server:${{ env.VERSION }}
           kubectl rollout status deployment/go-server
