@@ -14,5 +14,5 @@ jobs:
 
       - name: Set Version Tag
         run: |
-          # Test
-          echo $PATH
+          export PATH=$PATH:/usr/bin
+          kubectl get nodes
