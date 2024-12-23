@@ -18,5 +18,4 @@ jobs:
           sudo mv kubectl /usr/local/bin/
       - name: Set Version Tag
         run: |
-          export PATH=$PATH:/usr/bin
           kubectl get nodes
