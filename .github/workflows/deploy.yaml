@@ -31,14 +31,6 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/go-server:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/go-server:${{ env.VERSION }}
 
-      - name: Install kubectl
+      - name: Trigger Workflow via HTTP
         run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/arm64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
-
-      - name: Deploy to Kubernetes
-        run: |
-          export KUBECONFIG=/kubeconfig/kubeconfig
-          kubectl set image deployment/go-server go-server=${{ secrets.DOCKER_USERNAME }}/go-server:${{ env.VERSION }}
-          kubectl rollout status deployment/go-server
+          curl -X GET "https://workflow.brightsideserve.com/trigger?version=${{ github.sha }}"
