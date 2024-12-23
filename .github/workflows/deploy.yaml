@@ -21,7 +21,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/go-server:latest
 
       - name: Add /usr/local/bin to PATH
-        run: echo "/usr/local/bin:$PATH" >> $GITHUB_ENV
+        run: echo "PATH=/usr/local/bin:$PATH" >> $GITHUB_ENV
 
       - name: Debug PATH and kubectl
         run: |
