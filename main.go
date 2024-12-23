@@ -36,7 +36,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Woohoo, Kubernetes with CI!!!"))
+		w.Write([]byte("Woohoo, Kubernetes with CI!"))
 	})
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
