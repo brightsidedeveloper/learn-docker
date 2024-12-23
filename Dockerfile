@@ -8,7 +8,7 @@ RUN go mod download
 
 COPY . .
 
-RUN go build -o server .
+RUN GOARCH=arm64 GOOS=linux go build -o server .
 
 FROM debian:bookworm-slim
 
