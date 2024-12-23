@@ -12,6 +12,14 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/go-server:latest .
+          docker push ${{ secrets.DOCKER_USERNAME }}/go-server:latest
+
       - name: Install kubectl
         run: |
           if ! [ -x "$(command -v kubectl)" ]; then
@@ -40,17 +48,37 @@ jobs:
       - name: Verify kubectl Installation
         run: kubectl version --client
 
-      - name: Verify kubectl Cluster Access
+      - name: Verify Cluster Access
         run: kubectl get nodes
 
       - name: Verify Deployment
-        run: kubectl get deployment go-server --namespace=default
+        run: kubectl get deployment go-server --namespace=default || echo "Deployment not found"
 
-      - name: Debug Cluster State
+      - name: Create Deployment (If Not Exists)
         run: |
-          kubectl get all --namespace=default
-          kubectl describe deployment go-server --namespace=default || echo "Deployment not found"
+          kubectl get deployment go-server --namespace=default || kubectl apply -f - <<EOF
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: go-server
+            namespace: default
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: go-server
+            template:
+              metadata:
+                labels:
+                  app: go-server
+              spec:
+                containers:
+                - name: go-server
+                  image: ${{ secrets.DOCKER_USERNAME }}/go-server:latest
+                  ports:
+                  - containerPort: 8080
+          EOF
 
       - name: Update Kubernetes Deployment
         run: |
-          kubectl set image deployment/go-server go-server=${{ secrets.DOCKER_USERNAME }}/go-server:latest
+          kubectl set image deployment/go-server go-server=${{ secrets.DOCKER_USERNAME }}/go-server:latest --namespace=default
