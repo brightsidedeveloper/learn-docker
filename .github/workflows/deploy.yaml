@@ -30,5 +30,7 @@ jobs:
           kubectl version --client
 
       - name: Update Kubernetes Deployment
+        env:
+          KUBECONFIG: /home/pi/kubeconfig.yaml # Update this path to your kubeconfig file
         run: |
           kubectl set image deployment/go-server go-server=${{ secrets.DOCKER_USERNAME }}/go-server:latest
