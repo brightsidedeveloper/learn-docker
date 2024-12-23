@@ -12,7 +12,18 @@ jobs:
       - name: Install kubectl
         run: |
           if ! [ -x "$(command -v kubectl)" ]; then
-            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            ARCH=$(uname -m)
+            if [ "$ARCH" = "x86_64" ]; then
+              DOWNLOAD_ARCH="amd64"
+            elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
+              DOWNLOAD_ARCH="arm64"
+            elif [ "$ARCH" = "armv7l" ]; then
+              DOWNLOAD_ARCH="arm"
+            else
+              echo "Unsupported architecture: $ARCH"
+              exit 1
+            fi
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${DOWNLOAD_ARCH}/kubectl"
             chmod +x kubectl
             sudo mv kubectl /usr/local/bin
           fi
