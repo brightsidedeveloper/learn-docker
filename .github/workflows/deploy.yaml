@@ -9,29 +9,13 @@ jobs:
   build-and-deploy:
     runs-on: self-hosted
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Log in to Docker Hub
-        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
-
-      - name: Build and Push Docker Image
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/go-server:latest .
-          docker push ${{ secrets.DOCKER_USERNAME }}/go-server:latest
-
-      - name: Verify kubectl Installation
+      - name: Install kubectl
         run: |
           if ! [ -x "$(command -v kubectl)" ]; then
-            echo "kubectl is not installed or not executable"
-            exit 1
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x kubectl
+            sudo mv kubectl /usr/local/bin
           fi
-
-      - name: Install kubectl (if missing)
-        run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin
 
       - name: Add /usr/local/bin to PATH
         run: echo "PATH=/usr/local/bin:$PATH" >> $GITHUB_ENV
@@ -39,9 +23,11 @@ jobs:
       - name: Set KUBECONFIG
         run: echo "KUBECONFIG=$(pwd)/kubeconfig.yaml" >> $GITHUB_ENV
 
+      - name: Verify kubectl Installation
+        run: kubectl version --client
+
       - name: Verify kubectl Cluster Access
-        run: |
-          kubectl get nodes
+        run: kubectl get nodes
 
       - name: Update Kubernetes Deployment
         run: |
