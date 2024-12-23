@@ -20,65 +20,6 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/go-server:latest .
           docker push ${{ secrets.DOCKER_USERNAME }}/go-server:latest
 
-      - name: Install kubectl
+      - name: Deploy to Kubernetes
         run: |
-          if ! [ -x "$(command -v kubectl)" ]; then
-            ARCH=$(uname -m)
-            if [ "$ARCH" = "x86_64" ]; then
-              DOWNLOAD_ARCH="amd64"
-            elif [ "$ARCH" = "aarch64" ] || [ "$ARCH" = "arm64" ]; then
-              DOWNLOAD_ARCH="arm64"
-            elif [ "$ARCH" = "armv7l" ]; then
-              DOWNLOAD_ARCH="arm"
-            else
-              echo "Unsupported architecture: $ARCH"
-              exit 1
-            fi
-            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/${DOWNLOAD_ARCH}/kubectl"
-            chmod +x kubectl
-            sudo mv kubectl /usr/local/bin
-          fi
-
-      - name: Add /usr/local/bin to PATH
-        run: echo "PATH=/usr/local/bin:$PATH" >> $GITHUB_ENV
-
-      - name: Set KUBECONFIG
-        run: echo "KUBECONFIG=$(pwd)/kubeconfig.yaml" >> $GITHUB_ENV
-
-      - name: Verify kubectl Installation
-        run: kubectl version --client
-
-      - name: Verify Cluster Access
-        run: kubectl get nodes
-
-      - name: Verify Deployment
-        run: kubectl get deployment go-server --namespace=default || echo "Deployment not found"
-
-      - name: Create Deployment (If Not Exists)
-        run: |
-          kubectl get deployment go-server --namespace=default || kubectl apply -f - <<EOF
-          apiVersion: apps/v1
-          kind: Deployment
-          metadata:
-            name: go-server
-            namespace: default
-          spec:
-            replicas: 1
-            selector:
-              matchLabels:
-                app: go-server
-            template:
-              metadata:
-                labels:
-                  app: go-server
-              spec:
-                containers:
-                - name: go-server
-                  image: ${{ secrets.DOCKER_USERNAME }}/go-server:latest
-                  ports:
-                  - containerPort: 8080
-          EOF
-
-      - name: Update Kubernetes Deployment
-        run: |
-          kubectl set image deployment/go-server go-server=${{ secrets.DOCKER_USERNAME }}/go-server:latest --namespace=default
+          kubectl set image deployment/go-server go-server=${{ secrets.DOCKER_USERNAME }}/go-server:latest
