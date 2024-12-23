@@ -2,12 +2,19 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 )
+
+type product struct {
+	ID    int    `json:"id"`
+	Name  string `json:"name"`
+	Price int    `json:"price"`
+}
 
 func main() {
 	mux := http.NewServeMux()
@@ -18,6 +25,23 @@ func main() {
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Fire!"))
+	})
+
+	mux.HandleFunc("/product", func(w http.ResponseWriter, r *http.Request) {
+
+		product := product{
+			ID:    1,
+			Name:  "Laptop",
+			Price: 1000,
+		}
+
+		if err := json.NewEncoder(w).Encode(product); err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+
 	})
 
 	port := os.Getenv("PORT")
