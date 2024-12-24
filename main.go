@@ -36,7 +36,7 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Woohoo, Kubernetes Go Server with CI! \n\n\n Now with PostgreSQL, NFS and S3 capabilities!"))
+		w.Write([]byte("Woohoo, Kubernetes Go Server with CI! \n\n\nNow with PostgreSQL, NFS and S3 capabilities!"))
 	})
 
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
